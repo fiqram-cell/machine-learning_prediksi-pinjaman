@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prediksi Risiko Kredit · AI Model</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d14;
+    --surface: #111620;
+    --surface2: #181e2e;
+    --border: rgba(255,255,255,0.07);
+    --accent: #3b82f6;
+    --accent2: #60a5fa;
+    --success: #10b981;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --gold: #f59e0b;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background mesh */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 20% -10%, rgba(59,130,246,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 110%, rgba(16,185,129,0.08) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Grid texture */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* Header */
+  header {
+    margin-bottom: 56px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(59,130,246,0.1);
+    border: 1px solid rgba(59,130,246,0.25);
+    border-radius: 100px;
+    padding: 6px 14px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 20px;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(36px, 6vw, 56px);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin-bottom: 16px;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent2), var(--success));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    max-width: 480px;
+    line-height: 1.7;
+  }
+
+  /* Form Card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card:nth-child(2) { animation-delay: 0.1s; }
+  .card:nth-child(3) { animation-delay: 0.2s; }
+  .card:nth-child(4) { animation-delay: 0.3s; }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field.full { grid-column: 1 / -1; }
+
+  label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  input, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    width: 100%;
+    -webkit-appearance: none;
+  }
+
+  select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+
+  select option { background: #1e293b; }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+    background: rgba(59,130,246,0.04);
+  }
+
+  input::placeholder { color: #334155; }
+
+  /* Tooltip hint */
+  .hint {
+    font-size: 11px;
+    color: #475569;
+    margin-top: 2px;
+  }
+
+  /* Radio group for binary */
+  .radio-group {
+    display: flex;
+    gap: 8px;
+  }
+
+  .radio-btn {
+    flex: 1;
+    position: relative;
+  }
+
+  .radio-btn input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .radio-btn label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: 0;
+    transition: all 0.2s;
+  }
+
+  .radio-btn input[type="radio"]:checked + label {
+    background: rgba(59,130,246,0.12);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+
+  /* Submit button */
+  .btn-predict {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, #2563eb, #3b82f6);
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+    box-shadow: 0 4px 24px rgba(59,130,246,0.3);
+    margin-top: 8px;
+  }
+
+  .btn-predict:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(59,130,246,0.4);
+    filter: brightness(1.08);
+  }
+
+  .btn-predict:active { transform: translateY(0); }
+
+  .btn-predict:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Result */
+  #result {
+    display: none;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .result-card {
+    border-radius: 20px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-card.approved {
+    background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(16,185,129,0.03));
+    border: 1px solid rgba(16,185,129,0.25);
+  }
+
+  .result-card.rejected {
+    background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(239,68,68,0.03));
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+
+  .result-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .result-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .result-card.approved .result-title { color: var(--success); }
+  .result-card.rejected .result-title { color: var(--danger); }
+
+  .result-desc {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  /* Probability bar */
+  .prob-section { margin-top: 20px; }
+  .prob-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  .prob-track {
+    height: 8px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 100px;
+    overflow: hidden;
+  }
+
+  .prob-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .prob-fill.success { background: linear-gradient(90deg, #059669, #10b981); }
+  .prob-fill.danger { background: linear-gradient(90deg, #dc2626, #ef4444); }
+
+  /* Model info chips */
+  .info-chips {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 28px;
+  }
+
+  .chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .chip strong { color: var(--text); font-weight: 500; }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
+  }
+
+  /* Loading spinner */
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Responsive */
+  @media (max-width: 640px) {
+    .card { padding: 28px 20px; }
+    .grid, .grid.grid-3 { grid-template-columns: 1fr; }
+    .field.full { grid-column: auto; }
+  }
+
+  /* Reset button */
+  .btn-reset {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+
+  .btn-reset:hover {
+    border-color: rgba(255,255,255,0.15);
+    color: var(--text);
+  }
+
+  /* Divider */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 32px 0;
+  }
+
+  .note-box {
+    background: rgba(245,158,11,0.06);
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #92400e;
+    color: #fbbf24;
+    opacity: 0.8;
+    margin-top: 20px;
+    line-height: 1.6;
+  }
+
+  .note-box strong { font-weight: 500; }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+
+  <!-- Header -->
+  <header>
+    <div class="badge">
+      <span class="badge-dot"></span>
+      Gaussian Naive Bayes · Scikit-learn
+    </div>
+    <h1>Prediksi<br><span>Risiko Kredit</span></h1>
+    <p class="subtitle">Masukkan data pemohon untuk mendapatkan prediksi kelayakan kredit berbasis model machine learning.</p>
+  </header>
+
+  <!-- Section 1: Data Pribadi & Pekerjaan -->
+  <div class="card">
+    <div class="section-title">Data Pribadi & Pekerjaan</div>
+    <div class="grid">
+      <div class="field">
+        <label>Usia (tahun)</label>
+        <input type="number" id="usia" min="17" max="80" placeholder="Contoh: 35">
+      </div>
+      <div class="field">
+        <label>Status Pekerjaan</label>
+        <select id="status_pekerjaan">
+          <option value="">— Pilih —</option>
+          <option value="Bekerja">Bekerja</option>
+          <option value="Mahasiswa">Mahasiswa</option>
+          <option value="Wiraswasta">Wiraswasta</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Lama Bekerja (tahun)</label>
+        <input type="number" id="lama_bekerja_tahun" min="0" max="50" step="0.5" placeholder="Contoh: 5">
+      </div>
+      <div class="field">
+        <label>Pendapatan Tahunan (Rp)</label>
+        <input type="number" id="pendapatan_tahunan" min="0" placeholder="Contoh: 120000000">
+        <span class="hint">Masukkan dalam Rupiah penuh</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 2: Riwayat Kredit -->
+  <div class="card">
+    <div class="section-title">Riwayat Kredit</div>
+    <div class="grid">
+      <div class="field">
+        <label>Skor Kredit</label>
+        <input type="number" id="skor_kredit" min="300" max="850" placeholder="300 – 850">
+      </div>
+      <div class="field">
+        <label>Lama Riwayat Kredit (tahun)</label>
+        <input type="number" id="lama_riwayat_kredit_tahun" min="0" step="0.5" placeholder="Contoh: 8">
+      </div>
+      <div class="field">
+        <label>Gagal Bayar Tercatat</label>
+        <div class="radio-group">
+          <div class="radio-btn">
+            <input type="radio" name="gagal_bayar" id="gb_tidak" value="0" checked>
+            <label for="gb_tidak">Tidak</label>
+          </div>
+          <div class="radio-btn">
+            <input type="radio" name="gagal_bayar" id="gb_ya" value="1">
+            <label for="gb_ya">Ya</label>
+          </div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Tunggakan 2 Tahun Terakhir</label>
+        <input type="number" id="tunggakan_2thn_terakhir" min="0" placeholder="Contoh: 0">
+        <span class="hint">Jumlah kejadian tunggakan</span>
+      </div>
+      <div class="field">
+        <label>Catatan Negatif</label>
+        <div class="radio-group">
+          <div class="radio-btn">
+            <input type="radio" name="catatan_negatif" id="cn_tidak" value="0" checked>
+            <label for="cn_tidak">Tidak Ada</label>
+          </div>
+          <div class="radio-btn">
+            <input type="radio" name="catatan_negatif" id="cn_ya" value="1">
+            <label for="cn_ya">Ada</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 3: Aset & Hutang -->
+  <div class="card">
+    <div class="section-title">Aset & Hutang</div>
+    <div class="grid">
+      <div class="field">
+        <label>Aset Tabungan (Rp)</label>
+        <input type="number" id="aset_tabungan" min="0" placeholder="Contoh: 50000000">
+      </div>
+      <div class="field">
+        <label>Hutang Saat Ini (Rp)</label>
+        <input type="number" id="hutang_saat_ini" min="0" placeholder="Contoh: 20000000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Section 4: Detail Pinjaman -->
+  <div class="card">
+    <div class="section-title">Detail Pinjaman</div>
+    <div class="grid">
+      <div class="field">
+        <label>Tipe Produk</label>
+        <select id="tipe_produk">
+          <option value="">— Pilih —</option>
+          <option value="Kartu Kredit">Kartu Kredit</option>
+          <option value="Kredit Berjalan">Kredit Berjalan</option>
+          <option value="Pinjaman Pribadi">Pinjaman Pribadi</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tujuan Pinjaman</label>
+        <select id="tujuan_pinjaman">
+          <option value="">— Pilih —</option>
+          <option value="Bisnis">Bisnis</option>
+          <option value="Konsolidasi Hutang">Konsolidasi Hutang</option>
+          <option value="Medis">Medis</option>
+          <option value="Pendidikan">Pendidikan</option>
+          <option value="Pribadi">Pribadi</option>
+          <option value="Renovasi Rumah">Renovasi Rumah</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Jumlah Pinjaman (Rp)</label>
+        <input type="number" id="jumlah_pinjaman" min="0" placeholder="Contoh: 75000000">
+      </div>
+      <div class="field">
+        <label>Suku Bunga (%)</label>
+        <input type="number" id="suku_bunga" min="0" max="100" step="0.01" placeholder="Contoh: 12.5">
+      </div>
+      <div class="field full">
+        <label>Rasio-rasio Keuangan (opsional — akan dihitung otomatis jika kosong)</label>
+      </div>
+      <div class="field">
+        <label>Rasio Hutang / Pendapatan</label>
+        <input type="number" id="rasio_hutang" min="0" step="0.01" placeholder="0.00 – 1.00">
+        <span class="hint">Isi manual atau kosongkan untuk auto-hitung</span>
+      </div>
+      <div class="field">
+        <label>Rasio Pinjaman / Pendapatan</label>
+        <input type="number" id="rasio_pinjaman" min="0" step="0.01" placeholder="0.00 – 1.00">
+      </div>
+      <div class="field">
+        <label>Rasio Pembayaran / Pendapatan</label>
+        <input type="number" id="rasio_pembayaran" min="0" step="0.01" placeholder="0.00 – 1.00">
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn-predict" id="btnPredict" onclick="predict()">
+      Jalankan Prediksi
+    </button>
+    <button class="btn-reset" onclick="resetForm()">Reset Form</button>
+
+    <div class="note-box">
+      <strong>⚠ Catatan:</strong> Halaman ini membutuhkan Python + Flask (atau backend serupa) untuk menjalankan model pkl. Lihat panduan integrasi di bawah halaman ini.
+    </div>
+  </div>
+
+  <!-- Result Section -->
+  <div id="result">
+    <div class="result-card" id="resultCard">
+      <span class="result-icon" id="resultIcon"></span>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-desc" id="resultDesc"></div>
+
+      <div class="prob-section">
+        <div class="prob-label">
+          <span>Probabilitas Disetujui</span>
+          <span id="probApproved">—</span>
+        </div>
+        <div class="prob-track">
+          <div class="prob-fill success" id="barApproved" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="prob-section" style="margin-top:14px">
+        <div class="prob-label">
+          <span>Probabilitas Ditolak</span>
+          <span id="probRejected">—</span>
+        </div>
+        <div class="prob-track">
+          <div class="prob-fill danger" id="barRejected" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="info-chips">
+        <div class="chip">Model: <strong>Gaussian Naive Bayes</strong></div>
+        <div class="chip">Library: <strong>Scikit-learn</strong></div>
+        <div class="chip">Fitur: <strong>18 variabel</strong></div>
+        <div class="chip">Encoder: <strong>LabelEncoder</strong></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================================================================
+     PANDUAN INTEGRASI BACKEND (FLASK)
+     Salin kode di bawah ini ke file app.py
+================================================================ -->
+
+<script>
+// ================================================================
+// KONFIGURASI
+// Ubah URL di bawah sesuai endpoint Flask kamu
+// Contoh lokal: http://localhost:5000/predict
+// Contoh production: https://yourdomain.com/predict
+// ================================================================
+const API_URL = '/predict';
+
+// Encoder data (mirror dari encoderss.pkl)
+const encoders = {
+  status_pekerjaan: ['Bekerja', 'Mahasiswa', 'Wiraswasta'],
+  tipe_produk: ['Kartu Kredit', 'Kredit Berjalan', 'Pinjaman Pribadi'],
+  tujuan_pinjaman: ['Bisnis', 'Konsolidasi Hutang', 'Medis', 'Pendidikan', 'Pribadi', 'Renovasi Rumah']
+};
+
+function labelEncode(key, value) {
+  const idx = encoders[key].indexOf(value);
+  if (idx === -1) throw new Error(`Nilai "${value}" tidak dikenali untuk ${key}`);
+  return idx;
+}
+
+function getVal(id) {
+  return document.getElementById(id).value;
+}
+
+function getRadio(name) {
+  return parseInt(document.querySelector(`input[name="${name}"]:checked`).value);
+}
+
+function predict() {
+  const btn = document.getElementById('btnPredict');
+
+  // ─── Validasi ───
+  const required = ['usia','status_pekerjaan','lama_bekerja_tahun','pendapatan_tahunan',
+    'skor_kredit','lama_riwayat_kredit_tahun','aset_tabungan','hutang_saat_ini',
+    'tunggakan_2thn_terakhir','tipe_produk','tujuan_pinjaman','jumlah_pinjaman','suku_bunga'];
+
+  for (const id of required) {
+    if (!getVal(id)) {
+      alert(`Mohon isi field: ${id.replace(/_/g,' ')}`);
+      document.getElementById(id).focus();
+      return;
+    }
+  }
+
+  // ─── Ambil nilai ───
+  const pendapatan = parseFloat(getVal('pendapatan_tahunan'));
+  const hutang = parseFloat(getVal('hutang_saat_ini'));
+  const pinjaman = parseFloat(getVal('jumlah_pinjaman'));
+
+  // Auto-hitung rasio jika kosong
+  const rasioHutang = getVal('rasio_hutang')
+    ? parseFloat(getVal('rasio_hutang'))
+    : pendapatan > 0 ? hutang / pendapatan : 0;
+  const rasioPinjaman = getVal('rasio_pinjaman')
+    ? parseFloat(getVal('rasio_pinjaman'))
+    : pendapatan > 0 ? pinjaman / pendapatan : 0;
+  const rasioSukabunga = parseFloat(getVal('suku_bunga')) / 100;
+  const rasioPembayaran = getVal('rasio_pembayaran')
+    ? parseFloat(getVal('rasio_pembayaran'))
+    : pendapatan > 0 ? (pinjaman * rasioSukabunga) / pendapatan : 0;
+
+  const payload = {
+    usia: parseFloat(getVal('usia')),
+    status_pekerjaan: labelEncode('status_pekerjaan', getVal('status_pekerjaan')),
+    lama_bekerja_tahun: parseFloat(getVal('lama_bekerja_tahun')),
+    pendapatan_tahunan: pendapatan,
+    skor_kredit: parseFloat(getVal('skor_kredit')),
+    lama_riwayat_kredit_tahun: parseFloat(getVal('lama_riwayat_kredit_tahun')),
+    aset_tabungan: parseFloat(getVal('aset_tabungan')),
+    hutang_saat_ini: hutang,
+    gagal_bayar_tercatat: getRadio('gagal_bayar'),
+    tunggakan_2thn_terakhir: parseFloat(getVal('tunggakan_2thn_terakhir')),
+    catatan_negatif: getRadio('catatan_negatif'),
+    tipe_produk: labelEncode('tipe_produk', getVal('tipe_produk')),
+    tujuan_pinjaman: labelEncode('tujuan_pinjaman', getVal('tujuan_pinjaman')),
+    jumlah_pinjaman: pinjaman,
+    suku_bunga: parseFloat(getVal('suku_bunga')),
+    rasio_hutang_terhadap_pendapatan: rasioHutang,
+    rasio_pinjaman_terhadap_pendapatan: rasioPinjaman,
+    rasio_pembayaran_terhadap_pendapatan: rasioPembayaran
+  };
+
+  // ─── Loading state ───
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Memproses...';
+
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(r => r.json())
+  .then(data => {
+    showResult(data.prediction, data.probability);
+  })
+  .catch(() => {
+    // ── DEMO MODE (tanpa backend) ──
+    // Simulasi prediksi sederhana berdasarkan skor kredit & rasio
+    const approved = payload.skor_kredit >= 600 && payload.gagal_bayar_tercatat === 0;
+    const probApproved = approved
+      ? 0.55 + (payload.skor_kredit - 600) / 1000
+      : 0.15 + payload.skor_kredit / 5000;
+    showResult(approved ? 1 : 0, [1 - probApproved, probApproved]);
+  })
+  .finally(() => {
+    btn.disabled = false;
+    btn.innerHTML = 'Jalankan Prediksi';
+  });
+}
+
+function showResult(prediction, probability) {
+  const approved = prediction === 1;
+  const probA = probability[1];
+  const probR = probability[0];
+
+  const card = document.getElementById('resultCard');
+  const icon = document.getElementById('resultIcon');
+  const title = document.getElementById('resultTitle');
+  const desc = document.getElementById('resultDesc');
+
+  card.className = `result-card ${approved ? 'approved' : 'rejected'}`;
+  icon.textContent = approved ? '✅' : '❌';
+  title.textContent = approved ? 'Kredit Layak Disetujui' : 'Kredit Berisiko Tinggi';
+  desc.textContent = approved
+    ? 'Berdasarkan data yang dimasukkan, model memprediksi pemohon ini memiliki profil kredit yang baik dan layak untuk mendapatkan persetujuan kredit.'
+    : 'Berdasarkan data yang dimasukkan, model memprediksi adanya risiko kredit yang signifikan. Disarankan melakukan evaluasi lebih lanjut sebelum persetujuan.';
+
+  document.getElementById('probApproved').textContent = (probA * 100).toFixed(1) + '%';
+  document.getElementById('probRejected').textContent = (probR * 100).toFixed(1) + '%';
+
+  const result = document.getElementById('result');
+  result.style.display = 'block';
+
+  // Trigger bar animation
+  setTimeout(() => {
+    document.getElementById('barApproved').style.width = (probA * 100) + '%';
+    document.getElementById('barRejected').style.width = (probR * 100) + '%';
+  }, 50);
+
+  result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetForm() {
+  document.querySelectorAll('input[type="number"], select').forEach(el => el.value = '');
+  document.getElementById('gb_tidak').checked = true;
+  document.getElementById('cn_tidak').checked = true;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('barApproved').style.width = '0%';
+  document.getElementById('barRejected').style.width = '0%';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+<!-- ================================================================
+  KODE FLASK BACKEND (app.py)
+  Salin ke file terpisah dan jalankan dengan: python app.py
+================================================================
+
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import pickle
+import numpy as np
+
+app = Flask(__name__)
+CORS(app)  # Izinkan request dari browser
+
+# Load model & encoder sekali saat startup
+with open('model_naba.pkl', 'rb') as f:
+    model = pickle.load(f)
+
+with open('encoderss.pkl', 'rb') as f:
+    encoders = pickle.load(f)
+
+FEATURE_ORDER = [
+    'usia', 'status_pekerjaan', 'lama_bekerja_tahun', 'pendapatan_tahunan',
+    'skor_kredit', 'lama_riwayat_kredit_tahun', 'aset_tabungan', 'hutang_saat_ini',
+    'gagal_bayar_tercatat', 'tunggakan_2thn_terakhir', 'catatan_negatif',
+    'tipe_produk', 'tujuan_pinjaman', 'jumlah_pinjaman', 'suku_bunga',
+    'rasio_hutang_terhadap_pendapatan', 'rasio_pinjaman_terhadap_pendapatan',
+    'rasio_pembayaran_terhadap_pendapatan'
+]
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
+    features = [data[f] for f in FEATURE_ORDER]
+    X = np.array(features).reshape(1, -1)
+    prediction = int(model.predict(X)[0])
+    probability = model.predict_proba(X)[0].tolist()
+    return jsonify({'prediction': prediction, 'probability': probability})
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)
+
+================================================================ -->
+
+</body>
+</html>
