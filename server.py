@@ -21,7 +21,11 @@ import numpy as np
 import os
 
 app = Flask(__name__, static_folder='.')
-CORS(app)  # Izinkan cross-origin request dari browser
+CORS(app, origins=[
+    "https://nama-project-kamu.web.app",   # ← URL Firebase kamu
+    "https://nama-project-kamu.firebaseapp.com",
+    "http://localhost:5000"
+])
 
 # ─── Load Model & Encoder ─────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
